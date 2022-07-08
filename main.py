@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.messagebox import *
 from tkinter.filedialog import *
+from PIL import Image, ImageDraw
 import os
 import copy
 
@@ -16,8 +17,8 @@ class App(Tk):
     def __init__(self):
         super().__init__()
         self.shadowlist = []
-        self.shadow = None
-        self.directory = None
+        self.shadow = ""
+        self.directory = ""
         self.filelist = []
         btn_file = Button(self, text="Выбрать файл", command=self.choose_file)
         btn_dir = Button(self, text="Выбрать папку для изображений", command=self.choose_directory)
@@ -29,31 +30,19 @@ class App(Tk):
         btn_use.pack(padx=60, pady=10)
 
     def choose_file(self):
-        filetypes = (("Изображение", "*.jpg *.gif *.png"), )
+        filetypes = (("Изображение", "*.jpg *.png"), )
+        os.chdir(os.getcwd())
         if not os.path.isdir("shadow"):
             os.mkdir("shadow")
-            self.shadow = os.path.join(os.getcwd(), "/shadow")
+            self.shadow = os.path.join(os.getcwd(), "shadow")
+        else:
+            self.shadow = os.path.join(os.getcwd(), "shadow")
         filename = askopenfilename(title="Открыть файл", initialdir="/", filetypes=filetypes, multiple=True)
         if isinstance(filename, str):
-            if filename in self.filelist:
-                App.show_error(filename + " уже выбран")
-            else:
-                self.filelist.append(filename)
-                temp = copy.deepcopy(filename)
-                temp = temp[:getslash(temp)]
-                os.replace(temp, os.path.join(self.shadow, temp))
-                self.shadowlist.append(temp)
-
+            self.checkfile(filename)
         else:
             for i in filename:
-                if i in self.filelist:
-                    App.show_error(i + " уже выбран")
-                else:
-                    self.filelist.append(filename)
-                    temp = copy.deepcopy(filename)
-                    temp = temp[:getslash(temp)]
-                    os.replace(temp, os.path.join(self.shadow, temp))
-                    self.shadowlist.append(temp)
+                self.checkfile(i)
 
     def choose_directory(self):
         self.directory = askdirectory(title="Выбрать папку для изображений", initialdir="/")
@@ -63,24 +52,40 @@ class App(Tk):
         showerror("Ошибка", errormsg)
 
     def delete_element(self):
-        filetypes = (("Изображение", "*.jpg *.gif *.png"),)
+        filetypes = (("Изображение", "*.jpg *.png"),)
         filename = askopenfilename(title="Выберите файл для удаления", initialdir=self.shadow, filetypes=filetypes, multiple=True)
         if isinstance(filename, str):
-            if filename in self.filelist:
-                self.filelist.remove(filename)
+            if filename in self.shadowlist:
+                x = self.shadowlist.index(filename)
+                self.shadowlist.remove(filename)
+                self.filelist.pop(x)
             else:
                 App.show_error("Изображение не было выбрано")
         else:
             for i in filename:
-                if i in self.filelist:
-                    self.filelist.remove(filename)
+                if i in self.shadowlist:
+                    x = self.shadowlist.index(i)
+                    self.shadowlist.remove(i)
+                    self.filelist.pop(x)
                 else:
                     App.show_error("Изображение не было выбрано")
 
     def use_on_btn(self):
         pass
 
+    def checkfile(self, filename):
+        if filename in self.filelist:
+            App.show_error(filename + " уже выбран")
+        else:
+            self.filelist.append(filename)
+            temp = filename[:getslash(filename)]
+            tempim = copy.deepcopy(Image.open(filename))
+            os.replace(temp, os.path.join(self.shadow, temp))
+            self.shadowlist.append(temp)
+
 
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+    os.rmdir(os.path.join(os.getcwd(), 'shadow'))
+
