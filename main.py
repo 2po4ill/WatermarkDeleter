@@ -1,16 +1,15 @@
 from tkinter import *
 from tkinter.messagebox import *
 from tkinter.filedialog import *
-from PIL import Image, ImageDraw
 import os
-import copy
+import shutil
 
 
 def getslash(item):
     if isinstance(item, str):
-        for i in range(1, len(item)):
+        for i in range(3, len(item)):
             if item[-i] == "/":
-                return -i
+                return -i+1
 
 
 class App(Tk):
@@ -38,11 +37,8 @@ class App(Tk):
         else:
             self.shadow = os.path.join(os.getcwd(), "shadow")
         filename = askopenfilename(title="Открыть файл", initialdir="/", filetypes=filetypes, multiple=True)
-        if isinstance(filename, str):
-            self.checkfile(filename)
-        else:
-            for i in filename:
-                self.checkfile(i)
+        for i in filename:
+            self.checkfile(i)
 
     def choose_directory(self):
         self.directory = askdirectory(title="Выбрать папку для изображений", initialdir="/")
@@ -54,21 +50,17 @@ class App(Tk):
     def delete_element(self):
         filetypes = (("Изображение", "*.jpg *.png"),)
         filename = askopenfilename(title="Выберите файл для удаления", initialdir=self.shadow, filetypes=filetypes, multiple=True)
-        if isinstance(filename, str):
-            if filename in self.shadowlist:
-                x = self.shadowlist.index(filename)
-                self.shadowlist.remove(filename)
+        print(filename)
+        tempos = []
+        for i in filename:
+            tempos.append(i)
+            print(tempos)
+            if i in self.shadowlist:
+                x = self.shadowlist.index(i)
+                self.shadowlist.remove(i)
                 self.filelist.pop(x)
             else:
                 App.show_error("Изображение не было выбрано")
-        else:
-            for i in filename:
-                if i in self.shadowlist:
-                    x = self.shadowlist.index(i)
-                    self.shadowlist.remove(i)
-                    self.filelist.pop(x)
-                else:
-                    App.show_error("Изображение не было выбрано")
 
     def use_on_btn(self):
         pass
@@ -78,10 +70,11 @@ class App(Tk):
             App.show_error(filename + " уже выбран")
         else:
             self.filelist.append(filename)
-            temp = filename[:getslash(filename)]
-            tempim = copy.deepcopy(Image.open(filename))
-            os.replace(temp, os.path.join(self.shadow, temp))
+            temp = self.shadow + "\ " + filename[getslash(filename):]
+            print(self.shadow)
+            shutil.copyfile(filename, temp)
             self.shadowlist.append(temp)
+            print(self.shadowlist)
 
 
 if __name__ == "__main__":
