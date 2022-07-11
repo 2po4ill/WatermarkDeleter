@@ -19,14 +19,21 @@ class App(Tk):
         self.shadow = ""
         self.directory = ""
         self.filelist = []
+        self.title('Вотермарк мэйкер')
+        self.resizable(width=False, height=False)
+        self.text = Text(width=180, height=5)
+
         btn_file = Button(self, text="Выбрать файл", command=self.choose_file)
         btn_dir = Button(self, text="Выбрать папку для изображений", command=self.choose_directory)
         btn_del = Button(self, text="Убрать элемент", command=self.delete_element)
         btn_use = Button(self, text="Выполнить", command=self.use_on_btn)
-        btn_file.pack(padx=60, pady=10)
-        btn_dir.pack(padx=60, pady=10)
-        btn_del.pack(padx=60, pady=10)
-        btn_use.pack(padx=60, pady=10)
+        btn_clr = Button(self, text="Очистить", command=self.clear)
+
+        btn_file.pack(padx=180, pady=10)
+        btn_dir.pack(padx=180, pady=10)
+        btn_del.pack(padx=180, pady=10)
+        btn_use.pack(padx=180, pady=10)
+        btn_clr.pack(padx=180, pady=10)
 
     def choose_file(self):
         filetypes = (("Изображение", "*.jpg *.png"), )
@@ -39,6 +46,8 @@ class App(Tk):
         filename = askopenfilename(title="Открыть файл", initialdir="/", filetypes=filetypes, multiple=True)
         for i in filename:
             self.checkfile(i)
+        self.text.delete(1.0, END)
+        self.list_update()
 
     def choose_directory(self):
         self.directory = askdirectory(title="Выбрать папку для изображений", initialdir="/")
@@ -48,19 +57,23 @@ class App(Tk):
         showerror("Ошибка", errormsg)
 
     def delete_element(self):
-        filetypes = (("Изображение", "*.jpg *.png"),)
-        filename = askopenfilename(title="Выберите файл для удаления", initialdir=self.shadow, filetypes=filetypes, multiple=True)
-        print(filename)
-        tempos = []
-        for i in filename:
-            tempos.append(i)
-            print(tempos)
-            if i in self.shadowlist:
-                x = self.shadowlist.index(i)
-                self.shadowlist.remove(i)
-                self.filelist.pop(x)
-            else:
-                App.show_error("Изображение не было выбрано")
+        if self.shadow != "" and len(self.shadowlist) != 0:
+            filetypes = (("Изображение", "*.jpg *.png"),)
+            filename = askopenfilename(title="Выберите файл для удаления", initialdir=self.shadow, filetypes=filetypes, multiple=True)
+            tempos = []
+            for i in filename:
+                tempos.append(i)
+                if i in self.shadowlist:
+                    os.remove(i)
+                    x = self.shadowlist.index(i)
+                    self.shadowlist.remove(i)
+                    self.filelist.pop(x)
+                else:
+                    App.show_error("Изображение не было выбрано")
+        else:
+            App.show_error("Список файлов пуст, выберите что-нибудь")
+        self.text.delete(1.0, END)
+        self.list_update()
 
     def use_on_btn(self):
         pass
@@ -70,15 +83,39 @@ class App(Tk):
             App.show_error(filename + " уже выбран")
         else:
             self.filelist.append(filename)
-            temp = self.shadow + "\ " + filename[getslash(filename):]
-            print(self.shadow)
+            temp = self.shadow + "\\" + filename[getslash(filename):]
             shutil.copyfile(filename, temp)
-            self.shadowlist.append(temp)
-            print(self.shadowlist)
+            tempo = ""
+            for i in temp:
+                if i != "\\":
+                    tempo += i
+                else:
+                    tempo += '/'
+            self.shadowlist.append(tempo)
+        self.text.delete(1.0, END)
+        self.list_update()
+
+    def clear(self):
+        if self.shadow != "":
+            self.shadowlist.clear()
+            self.filelist.clear()
+            shutil.rmtree(self.shadow)
+            self.shadow = ""
+        else:
+            App.show_error("Список файлов пуст, выберите что-нибудь")
+        self.text.delete(1.0, END)
+        self.list_update()
+
+    def list_update(self):
+        for element in self.filelist:
+            self.text.insert(1.0, element + '\n')
+        self.text.pack()
 
 
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-    os.rmdir(os.path.join(os.getcwd(), 'shadow'))
+    if app.shadow != "":
+        shutil.rmtree(app.shadow)
+        app.shadow = ""
 
