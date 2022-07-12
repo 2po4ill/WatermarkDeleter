@@ -8,6 +8,8 @@ from PIL import Image
 
 
 def duplicatechecker(file):
+    """ Функция возвращающая название файла неконфликтующее с возможными повторениями в папке """
+
     if os.path.exists(file):
         filetype = file[getdot(file):]
         file = file[:getdot(file)-1] + "copy." + filetype
@@ -16,6 +18,8 @@ def duplicatechecker(file):
 
 
 def getdot(item):
+    """ Функция возвращающая индекс нужного среза для получения формата файла по его директории """
+
     if isinstance(item, str):
         for i in range(1, len(item)):
             if item[-i] == ".":
@@ -23,6 +27,8 @@ def getdot(item):
 
 
 def getslash(item):
+    """ Функция возвращающая индекс нужного среза для получения названия файла с .(формат файла) по его директории """
+
     if isinstance(item, str):
         for i in range(1, len(item)):
             if item[-i] == "/":
@@ -30,6 +36,22 @@ def getslash(item):
 
 
 class App(Tk):
+    """
+    Класс наследующий у tkinter'а аттрибуты, реализуется окно приложения
+
+    аттрибуты:
+    shadowlist - список директорий файлов находящихся в буферной папке
+    shadow - директория буферной папки
+    directory - директория папки в которую будут перенесены файлы
+    filelist - список директорий файлов, выбранных пользователем
+    title - название окна
+    resizable - метод класса tkinter, определяющий редактирование окна в ширину и в длинну
+    text - аттрибут содержащий экземпляр класса Text, определяющий размер окна
+
+    btn_xxx - экземпляр класса Button, реализующий кнопку в окне
+    xxx.pack() - метод класса tkinter, выводящий какой-либо элемент в окно приложения
+    """
+
     def __init__(self):
         super().__init__()
         self.shadowlist = []
@@ -54,6 +76,8 @@ class App(Tk):
         self.list_update()
 
     def choose_file(self):
+        """ Метод выбора файла/файлов с помощью проводника, вызывается кнопкой btn_file """
+
         filetypes = (("Изображение", "*.jpg *.png"), )
         os.chdir(os.getcwd())
         if not os.path.isdir("shadow"):
@@ -72,6 +96,8 @@ class App(Tk):
             app.shadow = ""
 
     def choose_directory(self):
+        """ Метод выбора папки с помощью проводника, вызывается кнопкой btn_dir """
+
         self.directory = askdirectory(title="Выбрать папку для изображений", initialdir="/")
         if self.directory != "":
             if App.confirm("Выбрать " + self.directory + " как папку с результатом?"):
@@ -81,14 +107,12 @@ class App(Tk):
         self.text.delete(1.0, END)
         self.list_update()
 
-    @staticmethod
-    def show_error(errormsg):
-        showerror("Ошибка", errormsg)
-
     def delete_element(self):
+        """ Метод выбора элемента из буферной папки, и удаление его из буферных списков, списков файлов """
+
         if self.shadow != "" and len(self.shadowlist) != 0:
             filetypes = (("Изображение", "*.jpg *.png"),)
-            filename = askopenfilename(title="Выберите файл для удаления", initialdir=self.shadow, filetypes=filetypes, multiple=True)
+            filename = askopenfilename(title="Удаление из списка", initialdir=self.shadow, filetypes=filetypes, multiple=True)
             if filename != "":
                 if App.confirm("Удалить выбранные файлы?"):
                     tempos = []
@@ -107,6 +131,8 @@ class App(Tk):
         self.list_update()
 
     def use_on_btn(self):
+        """ Метод выполняющий удаление пикселей выбранных изображений сбрасывающий их копию в выбранную папку """
+
         if self.shadow == "" or len(self.shadowlist) == 0:
             App.show_error("Список файлов пуст, выберите что-нибудь")
         elif self.directory == "":
@@ -136,6 +162,8 @@ class App(Tk):
                 self.list_update()
 
     def checkfile(self, filename):
+        """ Метод заполняющий буферную папку и списки связанные с выбором файлов, файлами из choose_file """
+
         if filename in self.filelist:
             App.show_error(filename + " уже выбран")
         else:
@@ -153,6 +181,8 @@ class App(Tk):
         self.list_update()
 
     def clear(self):
+        """ Метод очистки буферной папки с связянных списков """
+
         if self.shadow != "":
             if App.confirm("Очистить список выбранных файлов?"):
                 self.shadowlist.clear()
@@ -165,6 +195,8 @@ class App(Tk):
         self.list_update()
 
     def list_update(self):
+        """ Метод обновляющий текстовый дисплей окна названием финальной директории и выбранных файлов """
+
         for element in self.filelist:
             self.text.insert(1.0, "- " + element + '\n')
         if self.directory != "":
@@ -174,12 +206,22 @@ class App(Tk):
 
     @staticmethod
     def confirm(msg):
+        """ Статический метод для диалоговых окон yes, no, возвращает значение bool """
+
         answer = askyesno(title="Подтвердите операцию", message=msg)
         return answer
 
     @staticmethod
     def show_info(msg):
+        """ Статический метод для окон уведомлений """
+
         showinfo("Информация", msg)
+
+    @staticmethod
+    def show_error(errormsg):
+        """ Статический метод для окон ошибок """
+
+        showerror("Ошибка", errormsg)
 
 
 app = App()

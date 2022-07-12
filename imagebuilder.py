@@ -2,6 +2,8 @@ from PIL import ImageDraw
 
 
 def imagereader(image):
+    """ Функция определяющая цвет фона и выполняющая imageconverter """
+
     width = image.size[0]
     height = image.size[1]
     pix = image.load()
@@ -16,6 +18,8 @@ def imagereader(image):
 
 
 def imageconverter(draw, width, height, pix, mode):
+    """ Функция перерисовывующая пиксели вотермарки в цвет фона и сохраняющая получившийся picture """
+
     if mode:
         for i in range(width):
             for j in range(height):
@@ -23,7 +27,7 @@ def imageconverter(draw, width, height, pix, mode):
                 greenn = pix[i, j][1]
                 bluen = pix[i, j][2]
                 if redn > 233 and greenn > 233 and bluen > 233:
-                    draw.point((i,j), (233, 233, 233))
+                    draw.point((i, j), (233, 233, 233))
     else:
         for i in range(width):
             for j in range(height):
