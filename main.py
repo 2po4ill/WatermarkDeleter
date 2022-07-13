@@ -4,6 +4,7 @@ from tkinter.filedialog import *
 import os
 import shutil
 import imagebuilder
+import imagebuilderjpg
 from PIL import Image
 
 
@@ -14,7 +15,7 @@ def duplicatechecker(file):
         filetype = file[getdot(file):]
         file = file[:getdot(file)-1] + "copy." + filetype
         duplicatechecker(file)
-    return file[:getdot(file)] + "png"
+    return file
 
 
 def getdot(item):
@@ -153,12 +154,8 @@ class App(Tk):
                         image.save(result, "png")
                     elif ".jpg" in path:
                         image = Image.open(path)
-                        im = path[:getdot(file) - 1] + ".png"
-                        image.save(im, "png")
-                        image = Image.open(im)
-                        imagebuilder.imagereader(image)
-                        image.show()
-                        result = os.path.join(self.directory, im[getslash(im):])
+                        imagebuilderjpg.imagereader(image)
+                        result = os.path.join(self.directory, file[:getdot(file)] + 'png')
                         result = duplicatechecker(result)
                         image.save(result, "png")
                 App.show_info("Успешно выполнено")
