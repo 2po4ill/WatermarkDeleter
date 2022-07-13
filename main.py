@@ -158,6 +158,7 @@ class App(Tk):
                 self.filelist.clear()
                 shutil.rmtree(self.shadow)
                 self.shadow = ""
+                self.directory = ""
                 self.text.delete(1.0, END)
                 self.list_update()
 
