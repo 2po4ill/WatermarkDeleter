@@ -156,7 +156,7 @@ class App(Tk):
                         imagebuilder.imagereader(image)
                         result = os.path.join(self.directory, file)
                         result = duplicatechecker(result)
-                        image.save(result, "jpg")
+                        image.save(result, "png")
                 App.show_info("Успешно выполнено")
                 self.shadowlist.clear()
                 self.filelist.clear()
