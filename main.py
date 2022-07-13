@@ -14,7 +14,7 @@ def duplicatechecker(file):
         filetype = file[getdot(file):]
         file = file[:getdot(file)-1] + "copy." + filetype
         duplicatechecker(file)
-    return file
+    return file[:getdot(file)] + "png"
 
 
 def getdot(item):
@@ -31,7 +31,7 @@ def getslash(item):
 
     if isinstance(item, str):
         for i in range(1, len(item)):
-            if item[-i] == "/":
+            if item[-i] == "/" or item[-i] == "\\":
                 return -i+1
 
 
@@ -153,8 +153,12 @@ class App(Tk):
                         image.save(result, "png")
                     elif ".jpg" in path:
                         image = Image.open(path)
+                        im = path[:getdot(file) - 1] + ".png"
+                        image.save(im, "png")
+                        image = Image.open(im)
                         imagebuilder.imagereader(image)
-                        result = os.path.join(self.directory, file)
+                        image.show()
+                        result = os.path.join(self.directory, im[getslash(im):])
                         result = duplicatechecker(result)
                         image.save(result, "png")
                 App.show_info("Успешно выполнено")
