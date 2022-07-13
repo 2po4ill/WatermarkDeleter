@@ -26,8 +26,8 @@ def imageconverter(draw, width, height, pix, mode):
                 redn = pix[i, j][0]
                 greenn = pix[i, j][1]
                 bluen = pix[i, j][2]
-                if redn > 233 and greenn > 233 and bluen > 233:
-                    draw.point((i, j), (233, 233, 233))
+                if redn > 232 and greenn > 232 and bluen > 232:
+                    draw.point((i, j), (232, 232, 232))
     else:
         for i in range(width):
             for j in range(height):
