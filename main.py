@@ -86,12 +86,16 @@ class App(Tk):
         else:
             self.shadow = os.path.join(os.getcwd(), "shadow")
         filename = askopenfilename(title="Открыть файл", initialdir="/", filetypes=filetypes, multiple=True)
-        if App.confirm("Добавить выбранные файлы?"):
-            for i in filename:
-                self.checkfile(i)
-            self.text.delete(1.0, END)
-            self.list_update()
-        elif len(self.shadowlist) == 0:
+        if filename != "":
+            if App.confirm("Добавить выбранные файлы?"):
+                for i in filename:
+                    self.checkfile(i)
+                self.text.delete(1.0, END)
+                self.list_update()
+            elif len(self.shadowlist) == 0:
+                shutil.rmtree(app.shadow)
+                app.shadow = ""
+        else:
             shutil.rmtree(app.shadow)
             app.shadow = ""
 
