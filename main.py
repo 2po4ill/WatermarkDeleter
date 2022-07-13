@@ -63,17 +63,16 @@ class App(Tk):
         self.resizable(width=False, height=False)
         self.text = Text(width=120, height=5)
 
-        btn_file = Button(self, text="Выбрать файл", command=self.choose_file)
-        btn_dir = Button(self, text="Выбрать папку для изображений", command=self.choose_directory)
-        btn_del = Button(self, text="Убрать элемент", command=self.delete_element)
-        btn_use = Button(self, text="Выполнить", command=self.use_on_btn)
-        btn_clr = Button(self, text="Очистить", command=self.clear)
+        self.btn_watermarkdelete = Button(self, text="Удалить вотермарку", command=self.watermarkdelete)
 
-        btn_file.pack(padx=180, pady=10)
-        btn_dir.pack(padx=180, pady=10)
-        btn_del.pack(padx=180, pady=10)
-        btn_use.pack(padx=180, pady=10)
-        btn_clr.pack(padx=180, pady=10)
+        #удаление вотермарки
+        self.btn_file = Button(self, text="Выбрать файл", command=self.choose_file)
+        self.btn_dir = Button(self, text="Выбрать папку для изображений", command=self.choose_directory)
+        self.btn_del = Button(self, text="Убрать элемент", command=self.delete_element)
+        self.btn_use = Button(self, text="Выполнить", command=self.use_on_btn)
+        self.btn_clr = Button(self, text="Очистить", command=self.clear)
+
+        self.btn_watermarkdelete.pack(padx=180, pady=10)
         self.list_update()
 
     def choose_file(self):
@@ -228,6 +227,18 @@ class App(Tk):
         """ Статический метод для окон ошибок """
 
         showerror("Ошибка", errormsg)
+
+    def watermarkdelete(self):
+        self.btn_watermarkdelete.pack_forget()
+        self.text.pack_forget()
+
+        self.btn_file.pack(padx=180, pady=10)
+        self.btn_dir.pack(padx=180, pady=10)
+        self.btn_dir.pack(padx=180, pady=10)
+        self.btn_use.pack(padx=180, pady=10)
+        self.btn_clr.pack(padx=180, pady=10)
+
+        self.list_update()
 
 
 app = App()
