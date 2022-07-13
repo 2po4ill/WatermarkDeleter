@@ -11,7 +11,7 @@ from PIL import Image
 def duplicatechecker(file):
     """ Функция возвращающая название файла неконфликтующее с возможными повторениями в папке """
 
-    if os.path.exists(file):
+    if os.path.exists(file[:getdot(file)] + "png") or os.path.exists(file[:getdot(file)] + "jpg"):
         filetype = file[getdot(file):]
         file = file[:getdot(file)-1] + "copy." + filetype
         duplicatechecker(file)
