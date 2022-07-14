@@ -5,16 +5,16 @@ import os
 import shutil
 import imagebuilder
 import imagebuilderjpg
+import watermarkadder
 from PIL import Image
 
 
 def duplicatechecker(file):
     """ Функция возвращающая название файла неконфликтующее с возможными повторениями в папке """
 
-    if os.path.exists(file[:getdot(file)] + "png") or os.path.exists(file[:getdot(file)] + "jpg"):
+    while os.path.exists(file[:getdot(file)] + "png") or os.path.exists(file[:getdot(file)] + "jpg"):
         filetype = file[getdot(file):]
-        file = file[:getdot(file)-1] + "copy." + filetype
-        duplicatechecker(file)
+        file = file[:getdot(file) - 1] + "copy." + filetype
     return file
 
 
@@ -62,17 +62,28 @@ class App(Tk):
         self.title('Вотермарк мэйкер')
         self.resizable(width=False, height=False)
         self.text = Text(width=120, height=5)
+        self.bckgrimage = ""
+        self.shadowbckgrn = ""
 
         self.btn_watermarkdelete = Button(self, text="Удалить вотермарку", command=self.watermarkdelete)
+        self.btn_watermarkmaker = Button(self, text="Добавить вотермарку", command=self.watermarkmaker)
 
-        #удаление вотермарки
-        self.btn_file = Button(self, text="Выбрать файл", command=self.choose_file)
+
+        self.btn_file = Button(self, text="Выбрать файлы", command=self.choose_file)
         self.btn_dir = Button(self, text="Выбрать папку для изображений", command=self.choose_directory)
         self.btn_del = Button(self, text="Убрать элемент", command=self.delete_element)
-        self.btn_use = Button(self, text="Выполнить", command=self.use_on_btn)
         self.btn_clr = Button(self, text="Очистить", command=self.clear)
+        self.btn_back = Button(self, bg='red', text="Назад", command=self.rollback)
+
+        # удаление вотермарки
+        self.btn_usedel = Button(self, text="Выполнить", command=self.usedel_on_btn)
+
+        #добавление вотермарки
+        self.btn_background = Button(self, text="Выбрать фон", command=self.background)
+        self.btn_usemake = Button(self, text="Выполнить", command=self.usemake_on_btn)
 
         self.btn_watermarkdelete.pack(padx=180, pady=10)
+        self.btn_watermarkmaker.pack(padx=180, pady=10)
         self.list_update()
 
     def choose_file(self):
@@ -116,9 +127,9 @@ class App(Tk):
 
         if self.shadow != "" and len(self.shadowlist) != 0:
             filetypes = (("Изображение", "*.jpg *.png"),)
-            filename = askopenfilename(title="Удаление из списка", initialdir=self.shadow, filetypes=filetypes, multiple=True)
+            filename = askopenfilename(title="Сбросить выбранные изображения", initialdir=self.shadow, filetypes=filetypes, multiple=True)
             if filename != "":
-                if App.confirm("Удалить выбранные файлы?"):
+                if App.confirm("Сбросить выбранные файлы?"):
                     tempos = []
                     for i in filename:
                         tempos.append(i)
@@ -134,7 +145,7 @@ class App(Tk):
         self.text.delete(1.0, END)
         self.list_update()
 
-    def use_on_btn(self):
+    def usedel_on_btn(self):
         """ Метод выполняющий удаление пикселей выбранных изображений сбрасывающий их копию в выбранную папку """
 
         if self.shadow == "" or len(self.shadowlist) == 0:
@@ -166,11 +177,39 @@ class App(Tk):
                 self.text.delete(1.0, END)
                 self.list_update()
 
+    def usemake_on_btn(self):
+        if self.shadow == "" or len(self.shadowlist) == 0:
+            App.show_error("Список файлов пуст, выберите что-нибудь")
+        elif self.directory == "":
+            App.show_error("Выберите директорию для результата")
+        elif self.bckgrimage == "":
+            App.show_error("Выберите изображение для фона")
+        else:
+            if App.confirm("Выполнить для выбранных файлов и директории?"):
+                for file in os.listdir(self.shadow):
+                    path = os.path.join(self.shadow, file)
+                    image = Image.open(path)
+                    result = os.path.join(self.directory, file)
+                    result = duplicatechecker(result)
+                    watermark = os.path.join(self.shadowbckgrn, os.listdir(self.shadowbckgrn)[0])
+                    watermarkadder.imagereader(image, watermark, result)
+                App.show_info("Успешно выполнено")
+                self.shadowlist.clear()
+                self.filelist.clear()
+                shutil.rmtree(self.shadow)
+                self.shadow = ""
+                self.directory = ""
+                self.bckgrimage = ""
+                self.text.delete(1.0, END)
+                self.list_update()
+
     def checkfile(self, filename):
         """ Метод заполняющий буферную папку и списки связанные с выбором файлов, файлами из choose_file """
 
         if filename in self.filelist:
             App.show_error(filename + " уже выбран")
+        elif filename == self.bckgrimage:
+            App.show_error(filename + " уже выбран как фон")
         else:
             self.filelist.append(filename)
             temp = self.shadow + "\\" + filename[getslash(filename):]
@@ -186,16 +225,77 @@ class App(Tk):
         self.list_update()
 
     def clear(self):
-        """ Метод очистки буферной папки с связянных списков """
+        """ Метод очистки буферной папки и связянных списков """
 
-        if self.shadow != "":
+        if self.shadow != "" or self.directory != '' or self.bckgrimage != '':
             if App.confirm("Очистить список выбранных файлов?"):
-                self.shadowlist.clear()
-                self.filelist.clear()
-                shutil.rmtree(self.shadow)
-                self.shadow = ""
+                if self.shadow != "":
+                    self.shadowlist.clear()
+                    self.filelist.clear()
+                    shutil.rmtree(self.shadow)
+                    self.shadow = ""
+                self.directory = ""
+                self.bckgrimage = ""
         else:
             App.show_error("Список файлов пуст, выберите что-нибудь")
+        self.text.delete(1.0, END)
+        self.list_update()
+
+    def rollback(self):
+        if len(self.shadowlist) != 0 or self.directory != '' or self.bckgrimage != '':
+            if App.confirm('Ваши выбранные файлы и директории будут сброшенны, вы уверены?'):
+                if len(self.shadowlist) != 0:
+                    self.shadowlist.clear()
+                    self.filelist.clear()
+                    shutil.rmtree(self.shadow)
+                    self.shadow = ""
+                if self.shadowbckgrn != '':
+                    shutil.rmtree(self.shadowbckgrn)
+                    self.shadowbckgrn = ''
+                self.directory = ''
+                self.bckgrimage = ''
+
+        self.btn_file.pack_forget()
+        self.btn_dir.pack_forget()
+        self.btn_background.pack_forget()
+        self.btn_del.pack_forget()
+        self.btn_usedel.pack_forget()
+        self.btn_usemake.pack_forget()
+        self.btn_clr.pack_forget()
+        self.btn_back.pack_forget()
+        self.text.pack_forget()
+
+        self.btn_watermarkdelete.pack(padx=180, pady=10)
+        self.btn_watermarkmaker.pack(padx=180, pady=10)
+        self.text.delete(1.0, END)
+        self.list_update()
+
+    def background(self):
+        filetypes = (("Изображение", "*.jpg *.png"),)
+        os.chdir(os.getcwd())
+        if not os.path.isdir("shadowbckgrn"):
+            os.mkdir("shadowbckgrn")
+            self.shadowbckgrn = os.path.join(os.getcwd(), "shadowbckgrn")
+        self.bckgrimage = askopenfilename(title="Открыть файл", initialdir="/", filetypes=filetypes)
+        if self.bckgrimage != '' and self.bckgrimage not in self.filelist:
+            if App.confirm('Вы хотите выбрать ' + self.bckgrimage + ' как фон для изображений?'):
+                if self.shadowbckgrn != "":
+                    for i in os.listdir(self.shadowbckgrn):
+                        os.remove(os.path.join(self.shadowbckgrn, i))
+                temp = self.shadowbckgrn + "\\" + self.bckgrimage[getslash(self.bckgrimage):]
+                shutil.copyfile(self.bckgrimage, temp)
+            else:
+                shutil.rmtree(self.shadowbckgrn)
+                self.shadowbckgrn = ""
+                self.bckgrimage = ""
+        elif self.bckgrimage in self.filelist:
+            App.show_error('Выбранный фон уже добавлен как файл, для его выбора удалите изображение из списка файлов')
+            self.bckgrimage = ""
+            shutil.rmtree(self.shadowbckgrn)
+            self.shadowbckgrn = ""
+        else:
+            shutil.rmtree(self.shadowbckgrn)
+            self.shadowbckgrn = ""
         self.text.delete(1.0, END)
         self.list_update()
 
@@ -207,6 +307,8 @@ class App(Tk):
         if self.directory != "":
             self.text.insert(1.0, "Выбранные изображения:" + '\n')
             self.text.insert(1.0, self.directory + " - выбранная директория" + '\n')
+        if self.bckgrimage != "":
+            self.text.insert(1.0, self.bckgrimage + " - выбранный фон" + '\n')
         self.text.pack()
 
     @staticmethod
@@ -230,19 +332,37 @@ class App(Tk):
 
     def watermarkdelete(self):
         self.btn_watermarkdelete.pack_forget()
+        self.btn_watermarkmaker.pack_forget()
         self.text.pack_forget()
 
         self.btn_file.pack(padx=180, pady=10)
         self.btn_dir.pack(padx=180, pady=10)
-        self.btn_dir.pack(padx=180, pady=10)
-        self.btn_use.pack(padx=180, pady=10)
+        self.btn_del.pack(padx=180, pady=10)
+        self.btn_usedel.pack(padx=180, pady=10)
         self.btn_clr.pack(padx=180, pady=10)
+        self.btn_back.pack(padx=180, pady=10)
+
+        self.list_update()
+
+    def watermarkmaker(self):
+        self.btn_watermarkdelete.pack_forget()
+        self.btn_watermarkmaker.pack_forget()
+        self.text.pack_forget()
+
+        self.btn_file.pack(padx=180, pady=10)
+        self.btn_background.pack(padx=180, pady=10)
+        self.btn_dir.pack(padx=180, pady=10)
+        self.btn_del.pack(padx=180, pady=10)
+        self.btn_usemake.pack(padx=180, pady=10)
+        self.btn_clr.pack(padx=180, pady=10)
+        self.btn_back.pack(padx=180, pady=10)
 
         self.list_update()
 
 
 app = App()
 app.mainloop()
-if app.shadow != "":
-    shutil.rmtree(app.shadow)
-    app.shadow = ""
+if os.path.isdir("shadow"):
+    shutil.rmtree(os.path.join(os.getcwd(), "shadow"))
+if os.path.isdir("shadowbckgrn"):
+    shutil.rmtree(os.path.join(os.getcwd(), "shadowbckgrn"))
