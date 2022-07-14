@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw
 import cv2
 
 def imagereader(image, watermark, result):
@@ -10,14 +10,14 @@ def imagereader(image, watermark, result):
     dsize = (width, height)
     output = cv2.resize(src, dsize)
     cv2.imwrite(watermark, output)
-    image.convert('RGBA')
+    img = Image.open(watermark)
     pix = image.load()
+    pixtrg = img.load()
+    draw = ImageDraw.Draw(image)
     background = pix[0, 0]
-    for i in range(height):
-        for j in range(width):
-            if pix[j, i] == background:
-                pix[j, i] = (255, 255, 255, 0)
-    img = Image.open(watermark).convert("RGBA")
-    x, y = img.size
-    img.paste(image, (0, 0, x, y), image)
-    img.save(result, 'png')
+    for i in range(width):
+        for j in range(height):
+            if pix[i, j][0] >= background[0]:
+                draw.point((i, j), (pixtrg[i, j][0], pixtrg[i, j][1], pixtrg[i, j][2]))
+    image.save(result, 'png')
+

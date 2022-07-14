@@ -61,7 +61,7 @@ class App(Tk):
         self.filelist = []
         self.title('Вотермарк мэйкер')
         self.resizable(width=False, height=False)
-        self.text = Text(width=120, height=5)
+        self.text = Text(width=60, height=5)
         self.bckgrimage = ""
         self.shadowbckgrn = ""
 
@@ -197,6 +197,8 @@ class App(Tk):
                 self.shadowlist.clear()
                 self.filelist.clear()
                 shutil.rmtree(self.shadow)
+                shutil.rmtree(self.shadowbckgrn)
+                self.shadowbckgrn = ''
                 self.shadow = ""
                 self.directory = ""
                 self.bckgrimage = ""
