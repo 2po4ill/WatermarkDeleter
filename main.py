@@ -104,11 +104,15 @@ class App(Tk):
                 self.text.delete(1.0, END)
                 self.list_update()
             elif len(self.shadowlist) == 0:
-                shutil.rmtree(app.shadow)
-                app.shadow = ""
+                shutil.rmtree(self.shadow)
+                self.shadow = ""
+                self.shadowlist = []
+                self.filelist = []
         else:
-            shutil.rmtree(app.shadow)
-            app.shadow = ""
+            shutil.rmtree(self.shadow)
+            self.shadow = ""
+            self.shadowlist = []
+            self.filelist = []
 
     def choose_directory(self):
         """ Метод выбора папки с помощью проводника, вызывается кнопкой btn_dir """
