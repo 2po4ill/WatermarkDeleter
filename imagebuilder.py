@@ -30,6 +30,7 @@ def imageconverter(draw, size, pix, mode, formatim):
             for j in range(size[1]):
                 redn = pix[i, j][0]
                 booltr(redn, i, j, draw, formatim)
+
     else:
         for i in range(size[0]):
             for j in range(size[1]):
