@@ -1,7 +1,11 @@
+"""
+Модуль реализующий наложение изображения на фон
+"""
 from PIL import Image, ImageDraw
 import cv2
 
-def imagereader(image, watermark, result):
+
+def pasteimg(image, watermark, result):
     """ Функция определяющая цвет фона и выполняющая imageconverter """
 
     src = cv2.imread(watermark, cv2.IMREAD_UNCHANGED)
@@ -20,4 +24,3 @@ def imagereader(image, watermark, result):
             if pix[i, j][0] >= background[0]-5:
                 draw.point((i, j), (pixtrg[i, j][0], pixtrg[i, j][1], pixtrg[i, j][2]))
     image.save(result, 'png')
-

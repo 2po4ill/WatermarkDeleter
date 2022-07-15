@@ -1,26 +1,28 @@
 """
-Модуль реализующий удаление вотермарки на png изображении
+Модуль реализующий удаление вотермарки на png и jpg изображениях
 """
 from PIL import ImageDraw
 
 
-def imagereader(image):
+def imagereader(image, formatim):
     """ Функция определяющая цвет фона и выполняющая imageconverter """
 
     width = image.size[0]
     height = image.size[1]
     pix = image.load()
     reds = pix[0, 0][0]
-    greens = pix[0, 0][1]
-    blues = pix[0, 0][2]
     draw = ImageDraw.Draw(image)
-    if reds == blues and blues == greens and greens == 233:
-        imageconverter(draw, width, height, pix, True)
-    elif reds == blues and blues == greens and greens == 255:
-        imageconverter(draw, width, height, pix, False)
+    if reds == 233 and formatim == 'png':
+        imageconverter(draw, width, height, pix, True, formatim)
+    elif reds == 235 and formatim == 'jpg':
+        imageconverter(draw, width, height, pix, True, formatim)
+    elif reds == 255 and formatim == 'png' :
+        imageconverter(draw, width, height, pix, False, formatim)
+    elif reds == 255 and formatim == 'jpg':
+        imageconverter(draw, width, height, pix, False, formatim)
 
 
-def imageconverter(draw, width, height, pix, mode):
+def imageconverter(draw, width, height, pix, mode, formatim):
     """
     Функция перерисовывующая пиксели вотермарки в цвет фона и сохраняющая получившийся picture
     """
@@ -29,21 +31,27 @@ def imageconverter(draw, width, height, pix, mode):
         for i in range(width):
             for j in range(height):
                 redn = pix[i, j][0]
-                greenn = pix[i, j][1]
-                bluen = pix[i, j][2]
-                if redn > 233 and greenn > 233 and bluen > 233:
-                    draw.point((i, j), (233, 233, 233))
+                booltr(redn, i, j, draw, formatim)
     else:
         for i in range(width):
             for j in range(height):
                 redn = pix[i, j][0]
-                greenn = pix[i, j][1]
-                bluen = pix[i, j][2]
-                if bollean(redn) and bollean(greenn) and bollean(bluen):
+                if boolfal(redn, formatim):
                     draw.point((i, j), (255, 255, 255))
 
 
-def bollean(pixel):
-    """ Функция перекрашивающая заданные пиксели вотермарки """
+def boolfal(pixel, formatim):
+    """ Функция определяющая нужные пиксели вотермарки """
 
-    return bool(pixel >= 235 and pixel != 255)
+    if formatim == 'png':
+        return bool(pixel >= 235 and pixel != 255)
+    return bool(pixel >= 228 and pixel != 255)
+
+
+def booltr(pixel, i, j, draw, formatim):
+    """ Функция перекрашивающая заданные пиксели вотермарки от формата """
+
+    if formatim == 'png' and pixel > 233:
+        draw.point((i, j), (233, 233, 233))
+    elif formatim == 'jpg' and pixel > 231:
+        draw.point((i, j), (231, 231, 231))

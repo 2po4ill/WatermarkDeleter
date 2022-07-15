@@ -6,10 +6,9 @@ from tkinter.messagebox import *
 from tkinter.filedialog import *
 import os
 import shutil
-import imagebuilder
-import imagebuilderjpg
-import watermarkadder
 from PIL import Image
+import imagebuilder
+import watermarkadder
 
 
 def duplicatechecker(img):
@@ -25,10 +24,9 @@ def duplicatechecker(img):
 def getdot(item):
     """ Функция возвращающая индекс нужного среза для получения формата файла по его директории """
 
-    if isinstance(item, str):
-        for i in range(1, len(item)):
-            if item[-i] == ".":
-                return -i+1
+    for i in range(1, len(item)):
+        if item[-i] == ".":
+            return -i + 1
 
 
 def getslash(item):
@@ -36,10 +34,9 @@ def getslash(item):
     Функция возвращающая индекс среза для получения названия файла по его директории
     """
 
-    if isinstance(item, str):
-        for i in range(1, len(item)):
-            if item[-i] == "/" or item[-i] == "\\":
-                return -i+1
+    for i in range(1, len(item)):
+        if item[-i] == "/" or item[-i] == "\\":
+            return -i + 1
 
 
 class App(Tk):
@@ -150,9 +147,8 @@ class App(Tk):
                         tempos.append(i)
                         if i in self.shadowlist:
                             os.remove(i)
-                            x = self.shadowlist.index(i)
+                            self.filelist.pop(self.shadowlist.index(i))
                             self.shadowlist.remove(i)
-                            self.filelist.pop(x)
                         else:
                             App.show_error("Изображения не было в списке выбранных вами")
         else:
@@ -176,13 +172,13 @@ class App(Tk):
                     path = os.path.join(self.shadow, file)
                     if ".png" in path:
                         image = Image.open(path)
-                        imagebuilder.imagereader(image)
+                        imagebuilder.imagereader(image, 'png')
                         result = os.path.join(self.directory, file)
                         result = duplicatechecker(result)
                         image.save(result, "png")
                     elif ".jpg" in path:
                         image = Image.open(path)
-                        imagebuilderjpg.imagereader(image)
+                        imagebuilder.imagereader(image, 'jpg')
                         result = os.path.join(self.directory, file[:getdot(file)] + 'png')
                         result = duplicatechecker(result)
                         image.save(result, "png")
@@ -196,6 +192,8 @@ class App(Tk):
                 self.list_update()
 
     def usemake_on_btn(self):
+        """ Метод реализующий кнопку выполнить для добавления вотермарки """
+
         if self.shadow == "" or len(self.shadowlist) == 0:
             App.show_error("Список файлов пуст, выберите что-нибудь")
         elif self.directory == "":
@@ -210,7 +208,7 @@ class App(Tk):
                     result = os.path.join(self.directory, file)
                     result = duplicatechecker(result)
                     watermark = os.path.join(self.shadowbckgrn, os.listdir(self.shadowbckgrn)[0])
-                    watermarkadder.imagereader(image, watermark, result)
+                    watermarkadder.pasteimg(image, watermark, result)
                 App.show_info("Успешно выполнено")
                 self.shadowlist.clear()
                 self.filelist.clear()
@@ -224,7 +222,7 @@ class App(Tk):
                 self.list_update()
 
     def checkfile(self, filename):
-        """ 
+        """
         Метод заполняющий буферную папку и списки связанные с выбором файлов, файлами из choose_file
         """
 
@@ -264,6 +262,9 @@ class App(Tk):
         self.list_update()
 
     def rollback(self):
+        """
+        Метод реализующий кнопку назад, сбрасывает выбранные данные
+        """
         if len(self.shadowlist) != 0 or self.directory != '' or self.bckgrimage != '':
             if App.confirm('Ваши выбранные файлы и директории будут сброшенны, вы уверены?'):
                 if len(self.shadowlist) != 0:
@@ -293,6 +294,8 @@ class App(Tk):
         self.list_update()
 
     def background(self):
+        """ Метод реализующий кнопку выбора фона для изображений """
+
         filetypes = (("Изображение", "*.jpg *.png"),)
         os.chdir(os.getcwd())
         if not os.path.isdir("shadowbckgrn"):
@@ -356,6 +359,8 @@ class App(Tk):
         showerror("Ошибка", errormsg)
 
     def wtrmrkdel(self):
+        """ Метод выбора нужной секции программы, удаление вотермарки """
+
         self.btn_wtrmrkdel.pack_forget()
         self.btn_wtrmrkmk.pack_forget()
         self.text.pack_forget()
@@ -370,6 +375,8 @@ class App(Tk):
         self.list_update()
 
     def wtrmrkmk(self):
+        """ Метод выбора нужной секции программы, добавление вотермарки """
+
         self.btn_wtrmrkdel.pack_forget()
         self.btn_wtrmrkmk.pack_forget()
         self.text.pack_forget()
