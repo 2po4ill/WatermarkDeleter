@@ -1,3 +1,6 @@
+"""
+Модуль реализации интерфейса приложения добавления/удаления вотермарки
+"""
 from tkinter import *
 from tkinter.messagebox import *
 from tkinter.filedialog import *
@@ -9,13 +12,14 @@ import watermarkadder
 from PIL import Image
 
 
-def duplicatechecker(file):
+def duplicatechecker(img):
     """ Функция возвращающая название файла неконфликтующее с возможными повторениями в папке """
 
-    while os.path.exists(file[:getdot(file)] + "png") or os.path.exists(file[:getdot(file)] + "jpg"):
-        filetype = file[getdot(file):]
-        file = file[:getdot(file) - 1] + "copy." + filetype
-    return file
+    index = getdot(img)
+    while os.path.exists(img[:index] + "png") or os.path.exists(img[:index] + "jpg"):
+        filetype = img[index:]
+        img = img[:index - 1] + "copy." + filetype
+    return img
 
 
 def getdot(item):
@@ -28,7 +32,9 @@ def getdot(item):
 
 
 def getslash(item):
-    """ Функция возвращающая индекс нужного среза для получения названия файла с .(формат файла) по его директории """
+    """
+    Функция возвращающая индекс среза для получения названия файла по его директории
+    """
 
     if isinstance(item, str):
         for i in range(1, len(item)):
@@ -65,8 +71,8 @@ class App(Tk):
         self.bckgrimage = ""
         self.shadowbckgrn = ""
 
-        self.btn_watermarkdelete = Button(self, text="Удалить вотермарку", command=self.watermarkdelete)
-        self.btn_watermarkmaker = Button(self, text="Добавить вотермарку", command=self.watermarkmaker)
+        self.btn_wtrmrkdel = Button(self, text="Удалить вотермарку", command=self.wtrmrkdel)
+        self.btn_wtrmrkmk = Button(self, text="Добавить вотермарку", command=self.wtrmrkmk)
 
 
         self.btn_file = Button(self, text="Выбрать файлы", command=self.choose_file)
@@ -82,8 +88,8 @@ class App(Tk):
         self.btn_background = Button(self, text="Выбрать фон", command=self.background)
         self.btn_usemake = Button(self, text="Выполнить", command=self.usemake_on_btn)
 
-        self.btn_watermarkdelete.pack(padx=180, pady=10)
-        self.btn_watermarkmaker.pack(padx=180, pady=10)
+        self.btn_wtrmrkdel.pack(padx=180, pady=10)
+        self.btn_wtrmrkmk.pack(padx=180, pady=10)
         self.list_update()
 
     def choose_file(self):
@@ -271,8 +277,8 @@ class App(Tk):
         self.btn_back.pack_forget()
         self.text.pack_forget()
 
-        self.btn_watermarkdelete.pack(padx=180, pady=10)
-        self.btn_watermarkmaker.pack(padx=180, pady=10)
+        self.btn_wtrmrkdel.pack(padx=180, pady=10)
+        self.btn_wtrmrkmk.pack(padx=180, pady=10)
         self.text.delete(1.0, END)
         self.list_update()
 
@@ -336,9 +342,9 @@ class App(Tk):
 
         showerror("Ошибка", errormsg)
 
-    def watermarkdelete(self):
-        self.btn_watermarkdelete.pack_forget()
-        self.btn_watermarkmaker.pack_forget()
+    def wtrmrkdel(self):
+        self.btn_wtrmrkdel.pack_forget()
+        self.btn_wtrmrkmk.pack_forget()
         self.text.pack_forget()
 
         self.btn_file.pack(padx=180, pady=10)
@@ -350,9 +356,9 @@ class App(Tk):
 
         self.list_update()
 
-    def watermarkmaker(self):
-        self.btn_watermarkdelete.pack_forget()
-        self.btn_watermarkmaker.pack_forget()
+    def wtrmrkmk(self):
+        self.btn_wtrmrkdel.pack_forget()
+        self.btn_wtrmrkmk.pack_forget()
         self.text.pack_forget()
 
         self.btn_file.pack(padx=180, pady=10)
