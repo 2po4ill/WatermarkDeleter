@@ -1,3 +1,6 @@
+"""
+Модуль реализующий удаление вотермарки на jpg изображении
+"""
 from PIL import ImageDraw
 
 
@@ -18,7 +21,9 @@ def imagereader(image):
 
 
 def imageconverter(draw, width, height, pix, mode):
-    """ Функция перерисовывующая пиксели вотермарки в цвет фона и сохраняющая получившийся picture """
+    """
+    Функция перерисовывующая пиксели вотермарки в цвет фона и сохраняющая получившийся picture
+    """
 
     if mode:
         for i in range(width):
@@ -34,5 +39,10 @@ def imageconverter(draw, width, height, pix, mode):
                 redn = pix[i, j][0]
                 greenn = pix[i, j][1]
                 bluen = pix[i, j][2]
-                if redn >= 228 and greenn >= 228 and bluen >= 228 and redn != 255 and greenn != 255 and bluen != 255:
+                if bollean(redn) and bollean(greenn) and bollean(bluen):
                     draw.point((i, j), (255, 255, 255))
+
+def bollean(pixel):
+    """ Функция перекрашивающая заданные пиксели вотермарки """
+
+    return bool(pixel >= 228 and pixel != 255)

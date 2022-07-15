@@ -39,12 +39,11 @@ def imageconverter(draw, width, height, pix, mode):
                 redn = pix[i, j][0]
                 greenn = pix[i, j][1]
                 bluen = pix[i, j][2]
-                if bollean(redn) and bollean(greenn) and bollean(bluen):
+                if bollean(redn, 235, 255) and bollean(greenn, 235, 255) and bollean(bluen, 235, 255):
                     draw.point((i, j), (255, 255, 255))
 
 
-def bollean(pixel):
-    if pixel >= 235 and pixel != 255:
-        return True
-    else:
-        return False
+def bollean(pixel, start, end):
+    """ Функция перекрашивающая заданные пиксели вотермарки """
+
+    return bool(pixel >= start and pixel != end)
