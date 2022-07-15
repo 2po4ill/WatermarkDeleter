@@ -1,40 +1,44 @@
+"""
+Модуль реализации интерфейса приложения добавления/удаления вотермарки
+"""
 from tkinter import *
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 import os
 import shutil
-import imagebuilder
-import imagebuilderjpg
-import watermarkadder
 from PIL import Image
+import imagebuilder
+import watermarkadder
 
 
-def duplicatechecker(file):
+def duplicatechecker(img):
     """ Функция возвращающая название файла неконфликтующее с возможными повторениями в папке """
 
-    while os.path.exists(file[:getdot(file)] + "png") or os.path.exists(file[:getdot(file)] + "jpg"):
-        filetype = file[getdot(file):]
-        file = file[:getdot(file) - 1] + "copy." + filetype
-    return file
+    index = getdot(img)
+    while os.path.exists(img[:index] + "png") or os.path.exists(img[:index] + "jpg"):
+        filetype = img[index:]
+        img = img[:index - 1] + "copy." + filetype
+    return img
 
 
 def getdot(item):
     """ Функция возвращающая индекс нужного среза для получения формата файла по его директории """
 
-    if isinstance(item, str):
-        for i in range(1, len(item)):
-            if item[-i] == ".":
-                return -i+1
+    for i in range(1, len(item)):
+        if item[-i] == ".":
+            return -i + 1
+    return None
 
 
 def getslash(item):
-    """ Функция возвращающая индекс нужного среза для получения названия файла с .(формат файла) по его директории """
+    """
+    Функция возвращающая индекс среза для получения названия файла по его директории
+    """
 
-    if isinstance(item, str):
-        for i in range(1, len(item)):
-            if item[-i] == "/" or item[-i] == "\\":
-                return -i+1
-
+    for i in range(1, len(item)):
+        if item[-i] == "/" or item[-i] == "\\":
+            return -i + 1
+    return None
 
 class App(Tk):
     """
@@ -61,16 +65,16 @@ class App(Tk):
         self.filelist = []
         self.title('Вотермарк мэйкер')
         self.resizable(width=False, height=False)
-        self.text = Text(width=120, height=5)
+        self.text = Text(width=60, height=5)
         self.bckgrimage = ""
         self.shadowbckgrn = ""
 
-        self.btn_watermarkdelete = Button(self, text="Удалить вотермарку", command=self.watermarkdelete)
-        self.btn_watermarkmaker = Button(self, text="Добавить вотермарку", command=self.watermarkmaker)
+        self.btn_wtrmrkdel = Button(self, text="Удалить вотермарку", command=self.wtrmrkdel)
+        self.btn_wtrmrkmk = Button(self, text="Добавить вотермарку", command=self.wtrmrkmk)
 
 
-        self.btn_file = Button(self, text="Выбрать файлы", command=self.choose_file)
-        self.btn_dir = Button(self, text="Выбрать папку для изображений", command=self.choose_directory)
+        self.btn_img = Button(self, text="Выбрать изображения", command=self.chs_img)
+        self.btn_dir = Button(self, text="Выбрать папку для изображений", command=self.chs_dir)
         self.btn_del = Button(self, text="Убрать элемент", command=self.delete_element)
         self.btn_clr = Button(self, text="Очистить", command=self.clear)
         self.btn_back = Button(self, bg='red', text="Назад", command=self.rollback)
@@ -82,11 +86,11 @@ class App(Tk):
         self.btn_background = Button(self, text="Выбрать фон", command=self.background)
         self.btn_usemake = Button(self, text="Выполнить", command=self.usemake_on_btn)
 
-        self.btn_watermarkdelete.pack(padx=180, pady=10)
-        self.btn_watermarkmaker.pack(padx=180, pady=10)
+        self.btn_wtrmrkdel.pack(padx=180, pady=10)
+        self.btn_wtrmrkmk.pack(padx=180, pady=10)
         self.list_update()
 
-    def choose_file(self):
+    def chs_img(self):
         """ Метод выбора файла/файлов с помощью проводника, вызывается кнопкой btn_file """
 
         filetypes = (("Изображение", "*.jpg *.png"), )
@@ -96,7 +100,8 @@ class App(Tk):
             self.shadow = os.path.join(os.getcwd(), "shadow")
         else:
             self.shadow = os.path.join(os.getcwd(), "shadow")
-        filename = askopenfilename(title="Открыть файл", initialdir="/", filetypes=filetypes, multiple=True)
+        filename = askopenfilename(title="Открыть файл", initialdir="/",
+                                   filetypes=filetypes, multiple=True)
         if filename != "":
             if App.confirm("Добавить выбранные файлы?"):
                 for i in filename:
@@ -104,13 +109,17 @@ class App(Tk):
                 self.text.delete(1.0, END)
                 self.list_update()
             elif len(self.shadowlist) == 0:
-                shutil.rmtree(app.shadow)
-                app.shadow = ""
+                shutil.rmtree(self.shadow)
+                self.shadow = ""
+                self.shadowlist = []
+                self.filelist = []
         else:
-            shutil.rmtree(app.shadow)
-            app.shadow = ""
+            shutil.rmtree(self.shadow)
+            self.shadow = ""
+            self.shadowlist = []
+            self.filelist = []
 
-    def choose_directory(self):
+    def chs_dir(self):
         """ Метод выбора папки с помощью проводника, вызывается кнопкой btn_dir """
 
         self.directory = askdirectory(title="Выбрать папку для изображений", initialdir="/")
@@ -123,11 +132,15 @@ class App(Tk):
         self.list_update()
 
     def delete_element(self):
-        """ Метод выбора элемента из буферной папки, и удаление его из буферных списков, списков файлов """
+        """
+        Метод выбора элемента из буферной папки, и удаление его из буферных списков, списков файлов
+        """
 
         if self.shadow != "" and len(self.shadowlist) != 0:
             filetypes = (("Изображение", "*.jpg *.png"),)
-            filename = askopenfilename(title="Сбросить выбранные изображения", initialdir=self.shadow, filetypes=filetypes, multiple=True)
+            title = "Сбросить выбранные изображения"
+            filename = askopenfilename(title=title, initialdir=self.shadow,
+                                       filetypes=filetypes, multiple=True)
             if filename != "":
                 if App.confirm("Сбросить выбранные файлы?"):
                     tempos = []
@@ -135,9 +148,8 @@ class App(Tk):
                         tempos.append(i)
                         if i in self.shadowlist:
                             os.remove(i)
-                            x = self.shadowlist.index(i)
+                            self.filelist.pop(self.shadowlist.index(i))
                             self.shadowlist.remove(i)
-                            self.filelist.pop(x)
                         else:
                             App.show_error("Изображения не было в списке выбранных вами")
         else:
@@ -146,7 +158,10 @@ class App(Tk):
         self.list_update()
 
     def usedel_on_btn(self):
-        """ Метод выполняющий удаление пикселей выбранных изображений сбрасывающий их копию в выбранную папку """
+        """
+        Метод выполняющий удаление пикселей выбранных
+        изображений сбрасывающий их копию в выбранную папку
+        """
 
         if self.shadow == "" or len(self.shadowlist) == 0:
             App.show_error("Список файлов пуст, выберите что-нибудь")
@@ -158,13 +173,13 @@ class App(Tk):
                     path = os.path.join(self.shadow, file)
                     if ".png" in path:
                         image = Image.open(path)
-                        imagebuilder.imagereader(image)
+                        imagebuilder.imagereader(image, 'png')
                         result = os.path.join(self.directory, file)
                         result = duplicatechecker(result)
                         image.save(result, "png")
                     elif ".jpg" in path:
                         image = Image.open(path)
-                        imagebuilderjpg.imagereader(image)
+                        imagebuilder.imagereader(image, 'jpg')
                         result = os.path.join(self.directory, file[:getdot(file)] + 'png')
                         result = duplicatechecker(result)
                         image.save(result, "png")
@@ -178,6 +193,8 @@ class App(Tk):
                 self.list_update()
 
     def usemake_on_btn(self):
+        """ Метод реализующий кнопку выполнить для добавления вотермарки """
+
         if self.shadow == "" or len(self.shadowlist) == 0:
             App.show_error("Список файлов пуст, выберите что-нибудь")
         elif self.directory == "":
@@ -192,11 +209,13 @@ class App(Tk):
                     result = os.path.join(self.directory, file)
                     result = duplicatechecker(result)
                     watermark = os.path.join(self.shadowbckgrn, os.listdir(self.shadowbckgrn)[0])
-                    watermarkadder.imagereader(image, watermark, result)
+                    watermarkadder.pasteimg(image, watermark, result)
                 App.show_info("Успешно выполнено")
                 self.shadowlist.clear()
                 self.filelist.clear()
                 shutil.rmtree(self.shadow)
+                shutil.rmtree(self.shadowbckgrn)
+                self.shadowbckgrn = ''
                 self.shadow = ""
                 self.directory = ""
                 self.bckgrimage = ""
@@ -204,7 +223,9 @@ class App(Tk):
                 self.list_update()
 
     def checkfile(self, filename):
-        """ Метод заполняющий буферную папку и списки связанные с выбором файлов, файлами из choose_file """
+        """
+        Метод заполняющий буферную папку и списки связанные с выбором файлов, файлами из choose_file
+        """
 
         if filename in self.filelist:
             App.show_error(filename + " уже выбран")
@@ -242,6 +263,9 @@ class App(Tk):
         self.list_update()
 
     def rollback(self):
+        """
+        Метод реализующий кнопку назад, сбрасывает выбранные данные
+        """
         if len(self.shadowlist) != 0 or self.directory != '' or self.bckgrimage != '':
             if App.confirm('Ваши выбранные файлы и директории будут сброшенны, вы уверены?'):
                 if len(self.shadowlist) != 0:
@@ -255,7 +279,7 @@ class App(Tk):
                 self.directory = ''
                 self.bckgrimage = ''
 
-        self.btn_file.pack_forget()
+        self.btn_img.pack_forget()
         self.btn_dir.pack_forget()
         self.btn_background.pack_forget()
         self.btn_del.pack_forget()
@@ -265,12 +289,14 @@ class App(Tk):
         self.btn_back.pack_forget()
         self.text.pack_forget()
 
-        self.btn_watermarkdelete.pack(padx=180, pady=10)
-        self.btn_watermarkmaker.pack(padx=180, pady=10)
+        self.btn_wtrmrkdel.pack(padx=180, pady=10)
+        self.btn_wtrmrkmk.pack(padx=180, pady=10)
         self.text.delete(1.0, END)
         self.list_update()
 
     def background(self):
+        """ Метод реализующий кнопку выбора фона для изображений """
+
         filetypes = (("Изображение", "*.jpg *.png"),)
         os.chdir(os.getcwd())
         if not os.path.isdir("shadowbckgrn"):
@@ -289,7 +315,8 @@ class App(Tk):
                 self.shadowbckgrn = ""
                 self.bckgrimage = ""
         elif self.bckgrimage in self.filelist:
-            App.show_error('Выбранный фон уже добавлен как файл, для его выбора удалите изображение из списка файлов')
+            msg = 'Ваш фон уже добавлен как изображение, удалите изображение из списка файлов'
+            App.show_error(msg)
             self.bckgrimage = ""
             shutil.rmtree(self.shadowbckgrn)
             self.shadowbckgrn = ""
@@ -300,7 +327,9 @@ class App(Tk):
         self.list_update()
 
     def list_update(self):
-        """ Метод обновляющий текстовый дисплей окна названием финальной директории и выбранных файлов """
+        """
+        Метод обновляющий текстовый дисплей окна названием финальной директории и выбранных файлов
+        """
 
         for element in self.filelist:
             self.text.insert(1.0, "- " + element + '\n')
@@ -330,12 +359,14 @@ class App(Tk):
 
         showerror("Ошибка", errormsg)
 
-    def watermarkdelete(self):
-        self.btn_watermarkdelete.pack_forget()
-        self.btn_watermarkmaker.pack_forget()
+    def wtrmrkdel(self):
+        """ Метод выбора нужной секции программы, удаление вотермарки """
+
+        self.btn_wtrmrkdel.pack_forget()
+        self.btn_wtrmrkmk.pack_forget()
         self.text.pack_forget()
 
-        self.btn_file.pack(padx=180, pady=10)
+        self.btn_img.pack(padx=180, pady=10)
         self.btn_dir.pack(padx=180, pady=10)
         self.btn_del.pack(padx=180, pady=10)
         self.btn_usedel.pack(padx=180, pady=10)
@@ -344,12 +375,14 @@ class App(Tk):
 
         self.list_update()
 
-    def watermarkmaker(self):
-        self.btn_watermarkdelete.pack_forget()
-        self.btn_watermarkmaker.pack_forget()
+    def wtrmrkmk(self):
+        """ Метод выбора нужной секции программы, добавление вотермарки """
+
+        self.btn_wtrmrkdel.pack_forget()
+        self.btn_wtrmrkmk.pack_forget()
         self.text.pack_forget()
 
-        self.btn_file.pack(padx=180, pady=10)
+        self.btn_img.pack(padx=180, pady=10)
         self.btn_background.pack(padx=180, pady=10)
         self.btn_dir.pack(padx=180, pady=10)
         self.btn_del.pack(padx=180, pady=10)
