@@ -7,8 +7,6 @@ from PIL import ImageDraw
 def imagereader(image, formatim):
     """ Функция определяющая цвет фона и выполняющая imageconverter """
 
-    width = image.size[0]
-    height = image.size[1]
     pix = image.load()
     reds = pix[0, 0][0]
     draw = ImageDraw.Draw(image)
@@ -16,7 +14,7 @@ def imagereader(image, formatim):
         imageconverter(draw, image.size, pix, True, formatim)
     elif reds == 235 and formatim == 'jpg':
         imageconverter(draw, image.size, pix, True, formatim)
-    elif reds == 255 and formatim == 'png' :
+    elif reds == 255 and formatim == 'png':
         imageconverter(draw, image.size, pix, False, formatim)
     elif reds == 255 and formatim == 'jpg':
         imageconverter(draw, image.size, pix, False, formatim)
