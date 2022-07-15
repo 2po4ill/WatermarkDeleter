@@ -13,28 +13,28 @@ def imagereader(image, formatim):
     reds = pix[0, 0][0]
     draw = ImageDraw.Draw(image)
     if reds == 233 and formatim == 'png':
-        imageconverter(draw, width, height, pix, True, formatim)
+        imageconverter(draw, image.size, pix, True, formatim)
     elif reds == 235 and formatim == 'jpg':
-        imageconverter(draw, width, height, pix, True, formatim)
+        imageconverter(draw, image.size, pix, True, formatim)
     elif reds == 255 and formatim == 'png' :
-        imageconverter(draw, width, height, pix, False, formatim)
+        imageconverter(draw, image.size, pix, False, formatim)
     elif reds == 255 and formatim == 'jpg':
-        imageconverter(draw, width, height, pix, False, formatim)
+        imageconverter(draw, image.size, pix, False, formatim)
 
 
-def imageconverter(draw, width, height, pix, mode, formatim):
+def imageconverter(draw, size, pix, mode, formatim):
     """
     Функция перерисовывующая пиксели вотермарки в цвет фона и сохраняющая получившийся picture
     """
 
     if mode:
-        for i in range(width):
-            for j in range(height):
+        for i in range(size[0]):
+            for j in range(size[1]):
                 redn = pix[i, j][0]
                 booltr(redn, i, j, draw, formatim)
     else:
-        for i in range(width):
-            for j in range(height):
+        for i in range(size[0]):
+            for j in range(size[1]):
                 redn = pix[i, j][0]
                 if boolfal(redn, formatim):
                     draw.point((i, j), (255, 255, 255))

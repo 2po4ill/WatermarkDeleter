@@ -27,6 +27,7 @@ def getdot(item):
     for i in range(1, len(item)):
         if item[-i] == ".":
             return -i + 1
+    return None
 
 
 def getslash(item):
@@ -37,7 +38,7 @@ def getslash(item):
     for i in range(1, len(item)):
         if item[-i] == "/" or item[-i] == "\\":
             return -i + 1
-
+    return None
 
 class App(Tk):
     """
